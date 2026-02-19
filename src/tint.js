@@ -1,6 +1,5 @@
 /**
  * Applies a color tint overlay to the entire canvas.
- * Compositing effect — no pixel reads, very fast.
  *
  * @param {CanvasRenderingContext2D} ctx
  * @param {Object} [opts]

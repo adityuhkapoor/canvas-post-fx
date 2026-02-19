@@ -1,9 +1,6 @@
 /**
  * Desaturates the canvas toward grayscale using the 'saturation' composite op.
- * Compositing effect — no pixel reads, fast.
- *
- * Browser note: the 'saturation' globalCompositeOperation is not supported in
- * all environments (Safari < 15). Fails silently (no-op) where unsupported.
+ * Not supported in Safari < 15 — silently no-ops there.
  *
  * @param {CanvasRenderingContext2D} ctx
  * @param {Object} [opts]
@@ -19,8 +16,6 @@ export function desaturate(ctx, opts = {}) {
 
   ctx.save();
 
-  // 'saturation' composite op applies the saturation of the source to the dest.
-  // Drawing a gray rectangle with 'saturation' drains color from the canvas.
   ctx.globalCompositeOperation = 'saturation';
   ctx.globalAlpha = Math.min(intensity, 1);
   ctx.fillStyle = '#808080';

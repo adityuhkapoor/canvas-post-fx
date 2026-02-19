@@ -1,6 +1,6 @@
 /**
  * Chromatic aberration — shifts red and blue channels in opposite directions.
- * Offscreen canvas effect — uses an internal canvas cached on ctx.canvas._chromaticCanvas.
+ * Internal offscreen canvas cached on ctx.canvas._chromaticCanvas.
  *
  * @param {CanvasRenderingContext2D} ctx
  * @param {Object} [opts]
@@ -21,7 +21,6 @@ export function chromatic(ctx, opts = {}) {
 
   if (w === 0 || h === 0) return;
 
-  // Get or create the offscreen canvas, attached to the host canvas
   let offscreen = canvas._chromaticCanvas;
   if (!offscreen || offscreen.width !== w || offscreen.height !== h) {
     offscreen = document.createElement('canvas');
@@ -32,12 +31,6 @@ export function chromatic(ctx, opts = {}) {
 
   const offCtx = offscreen.getContext('2d');
 
-  // Determine source — snapshot current canvas if none provided
-  const src = source || canvas;
-
-  // If no external source, we need to snapshot before we composite onto ctx,
-  // because the blue pass would read an already-modified canvas.
-  // The offscreen canvas serves as our snapshot.
   if (!source) {
     offCtx.clearRect(0, 0, w, h);
     offCtx.drawImage(canvas, 0, 0);
@@ -48,11 +41,9 @@ export function chromatic(ctx, opts = {}) {
   ctx.save();
   ctx.globalAlpha = opacity;
 
-  // Red channel: shift left — use 'multiply' to isolate reds
   ctx.globalCompositeOperation = 'multiply';
   offCtx.clearRect(0, 0, w, h);
   offCtx.drawImage(drawSource, 0, 0);
-  // Tint the offscreen red
   offCtx.save();
   offCtx.globalCompositeOperation = 'multiply';
   offCtx.fillStyle = '#ff0000';
@@ -60,11 +51,9 @@ export function chromatic(ctx, opts = {}) {
   offCtx.restore();
   ctx.drawImage(offscreen, -offset, 0);
 
-  // Blue channel: shift right — use 'lighter' (additive) for blue
   ctx.globalCompositeOperation = 'lighter';
   offCtx.clearRect(0, 0, w, h);
   offCtx.drawImage(drawSource, 0, 0);
-  // Tint the offscreen blue
   offCtx.save();
   offCtx.globalCompositeOperation = 'multiply';
   offCtx.fillStyle = '#0000ff';

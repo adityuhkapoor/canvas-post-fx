@@ -1,6 +1,5 @@
 /**
  * Draws a radial vignette (darkened edges) over the canvas.
- * Compositing effect — no pixel reads, very fast.
  *
  * @param {CanvasRenderingContext2D} ctx
  * @param {Object} [opts]

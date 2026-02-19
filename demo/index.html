@@ -207,7 +207,7 @@ const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
 const fpsEl = document.getElementById('fps');
 
-// --- Slider state ---
+
 const state = {
   scanlines:   { gap: 4, width: 2, opacity: 0.12, color: [0, 0, 0] },
   vignette:    { innerRadius: 0.3, outerRadius: 0.75, opacity: 0.5, color: [0, 0, 0] },
@@ -222,7 +222,7 @@ const state = {
   shake:       { intensity: 25 },
 };
 
-// --- Wire up sliders ---
+
 document.querySelectorAll('input[type="range"]').forEach(input => {
   const update = () => {
     const fx = input.dataset.fx;
@@ -244,12 +244,12 @@ document.querySelectorAll('input[type="range"]').forEach(input => {
   input.addEventListener('input', update);
 });
 
-// --- Enabled state ---
+
 function isOn(name) {
   return document.getElementById('en-' + name).checked;
 }
 
-// --- FPS counter ---
+
 let frameCount = 0;
 let lastFpsTime = performance.now();
 
@@ -263,7 +263,7 @@ function updateFps(now) {
   }
 }
 
-// --- Animated base scene ---
+
 function drawScene(t) {
   const w = canvas.width;
   const h = canvas.height;
@@ -317,7 +317,7 @@ function drawScene(t) {
   ctx.globalAlpha = 1;
 }
 
-// --- Main loop ---
+
 const fxMap = { scanlines, vignette, tint, desaturate, nightvision, flash, brightness, noise, glitch, chromatic };
 
 function frame(now) {
@@ -348,7 +348,7 @@ function frame(now) {
 
 requestAnimationFrame(frame);
 
-// --- Copy snippet ---
+
 document.getElementById('copy-btn').addEventListener('click', () => {
   const lines = [];
   lines.push("import {");

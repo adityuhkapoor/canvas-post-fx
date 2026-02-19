@@ -1,8 +1,5 @@
 /**
  * Fills the canvas with a solid color at a given opacity.
- * Use for hit flashes, screen transitions, fade-to-white, etc.
- * Caller animates opacity externally (e.g. tween from 1 to 0).
- * Compositing effect — no pixel reads, very fast.
  *
  * @param {CanvasRenderingContext2D} ctx
  * @param {Object} [opts]

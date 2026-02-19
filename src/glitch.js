@@ -36,11 +36,11 @@ export function glitch(ctx, opts = {}) {
     const imageData = ctx.getImageData(0, sliceY, w, sliceH);
     ctx.putImageData(imageData, offset, sliceY);
 
-    // Fill the gap left by the displacement
+    ctx.fillStyle = '#000';
     if (offset > 0) {
-      ctx.clearRect(0, sliceY, offset, sliceH);
+      ctx.fillRect(0, sliceY, offset, sliceH);
     } else {
-      ctx.clearRect(w + offset, sliceY, -offset, sliceH);
+      ctx.fillRect(w + offset, sliceY, -offset, sliceH);
     }
   }
 

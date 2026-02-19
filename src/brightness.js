@@ -1,7 +1,6 @@
 /**
  * Adjusts brightness of a canvas region.
- * value=50 is neutral (no change), <50 darkens, >50 brightens.
- * Compositing effect — no pixel reads, very fast.
+ * value=50 is neutral, below darkens, above brightens.
  *
  * @param {CanvasRenderingContext2D} ctx
  * @param {Object} [opts]
@@ -25,11 +24,9 @@ export function brightness(ctx, opts = {}) {
   ctx.save();
 
   if (value < 50) {
-    // Darken: overlay black with opacity proportional to how far below 50
     const opacity = 1 - value / 50;
     ctx.fillStyle = `rgba(0,0,0,${opacity})`;
   } else {
-    // Brighten: overlay white with opacity proportional to how far above 50
     const opacity = (value - 50) / 50;
     ctx.fillStyle = `rgba(255,255,255,${opacity})`;
   }
