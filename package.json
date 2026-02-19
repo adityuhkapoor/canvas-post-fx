@@ -1,0 +1,29 @@
+{
+  "name": "canvas-post-fx",
+  "version": "0.1.0",
+  "description": "Composable real-time Canvas 2D post-processing effects. No WebGL. No dependencies.",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./scanlines": "./src/scanlines.js",
+    "./vignette": "./src/vignette.js",
+    "./tint": "./src/tint.js",
+    "./desaturate": "./src/desaturate.js",
+    "./nightvision": "./src/nightvision.js",
+    "./flash": "./src/flash.js",
+    "./brightness": "./src/brightness.js",
+    "./noise": "./src/noise.js",
+    "./glitch": "./src/glitch.js",
+    "./chromatic": "./src/chromatic.js",
+    "./shake": "./src/shake.js"
+  },
+  "files": ["src", "README.md", "LICENSE"],
+  "keywords": [
+    "canvas", "2d", "post-processing", "effects", "scanlines",
+    "vignette", "glitch", "noise", "chromatic-aberration", "crt",
+    "game", "real-time", "no-webgl"
+  ],
+  "license": "MIT",
+  "sideEffects": false
+}

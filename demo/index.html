@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>canvas-post-fx demo</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: system-ui, sans-serif; background: #1a1a2e; color: #e0e0e0; display: flex; height: 100vh; overflow: hidden; }
+
+  #canvas-wrap { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
+  canvas { display: block; border: 1px solid #333; }
+
+  #fps { position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.7); color: #0f0; font-family: monospace; font-size: 13px; padding: 4px 8px; border-radius: 4px; pointer-events: none; }
+
+  #sidebar { width: 340px; background: #16213e; overflow-y: auto; padding: 16px; border-left: 1px solid #333; }
+  #sidebar h1 { font-size: 16px; margin-bottom: 12px; color: #fff; }
+
+  .fx-group { margin-bottom: 14px; border: 1px solid #333; border-radius: 6px; padding: 10px; }
+  .fx-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .fx-header label { font-weight: 600; font-size: 14px; cursor: pointer; flex: 1; }
+  .fx-header input[type="checkbox"] { cursor: pointer; }
+  .tier { font-size: 10px; padding: 2px 6px; border-radius: 3px; font-weight: 700; text-transform: uppercase; }
+  .tier-fast { background: #2d6a4f; color: #b7e4c7; }
+  .tier-medium { background: #7f5539; color: #ddb892; }
+  .tier-slow { background: #9d0208; color: #ffc2c7; }
+
+  .fx-controls { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 4px 8px; font-size: 12px; }
+  .fx-controls label { text-align: right; opacity: 0.7; }
+  .fx-controls input[type="range"] { width: 100%; }
+  .fx-controls .val { font-family: monospace; min-width: 36px; text-align: right; }
+
+  #copy-btn { width: 100%; margin-top: 12px; padding: 8px; background: #0f3460; color: #e0e0e0; border: 1px solid #555; border-radius: 4px; cursor: pointer; font-size: 13px; }
+  #copy-btn:hover { background: #1a5276; }
+  #copy-btn.copied { background: #2d6a4f; }
+</style>
+</head>
+<body>
+
+<div id="canvas-wrap">
+  <canvas id="c" width="640" height="480"></canvas>
+  <div id="fps">-- FPS</div>
+</div>
+
+<div id="sidebar">
+  <h1>canvas-post-fx</h1>
+
+  <!-- Scanlines -->
+  <div class="fx-group">
+    <div class="fx-header">
+      <input type="checkbox" id="en-scanlines">
+      <label for="en-scanlines">scanlines</label>
+      <span class="tier tier-fast">fast</span>
+    </div>
+    <div class="fx-controls">
+      <label>gap</label><input type="range" min="1" max="20" value="4" data-fx="scanlines" data-p="gap"><span class="val">4</span>
+      <label>width</label><input type="range" min="1" max="10" value="2" data-fx="scanlines" data-p="width"><span class="val">2</span>
+      <label>opacity</label><input type="range" min="0" max="100" value="12" data-fx="scanlines" data-p="opacity" data-scale="0.01"><span class="val">0.12</span>
+    </div>
+  </div>
+
+  <!-- Vignette -->
+  <div class="fx-group">
+    <div class="fx-header">
+      <input type="checkbox" id="en-vignette">
+      <label for="en-vignette">vignette</label>
+      <span class="tier tier-fast">fast</span>
+    </div>
+    <div class="fx-controls">
+      <label>inner</label><input type="range" min="0" max="100" value="30" data-fx="vignette" data-p="innerRadius" data-scale="0.01"><span class="val">0.30</span>
+      <label>outer</label><input type="range" min="0" max="100" value="75" data-fx="vignette" data-p="outerRadius" data-scale="0.01"><span class="val">0.75</span>
+      <label>opacity</label><input type="range" min="0" max="100" value="50" data-fx="vignette" data-p="opacity" data-scale="0.01"><span class="val">0.50</span>
+    </div>
+  </div>
+
+  <!-- Tint -->
+  <div class="fx-group">
+    <div class="fx-header">
+      <input type="checkbox" id="en-tint">
+      <label for="en-tint">tint</label>
+      <span class="tier tier-fast">fast</span>
+    </div>
+    <div class="fx-controls">
+      <label>r</label><input type="range" min="0" max="255" value="0" data-fx="tint" data-p="color.0"><span class="val">0</span>
+      <label>g</label><input type="range" min="0" max="255" value="30" data-fx="tint" data-p="color.1"><span class="val">30</span>
+      <label>b</label><input type="range" min="0" max="255" value="0" data-fx="tint" data-p="color.2"><span class="val">0</span>
+      <label>opacity</label><input type="range" min="0" max="100" value="8" data-fx="tint" data-p="opacity" data-scale="0.01"><span class="val">0.08</span>
+    </div>
+  </div>
+
+  <!-- Desaturate -->
+  <div class="fx-group">
+    <div class="fx-header">
+      <input type="checkbox" id="en-desaturate">
+      <label for="en-desaturate">desaturate</label>
+      <span class="tier tier-fast">fast</span>
+    </div>
+    <div class="fx-controls">
+      <label>intensity</label><input type="range" min="0" max="100" value="60" data-fx="desaturate" data-p="intensity" data-scale="0.01"><span class="val">0.60</span>
+    </div>
+  </div>
+
+  <!-- Night Vision -->
+  <div class="fx-group">
+    <div class="fx-header">
+      <input type="checkbox" id="en-nightvision">
+      <label for="en-nightvision">nightvision</label>
+      <span class="tier tier-fast">fast</span>
+    </div>
+    <div class="fx-controls">
+      <label>intensity</label><input type="range" min="0" max="100" value="60" data-fx="nightvision" data-p="intensity" data-scale="0.01"><span class="val">0.60</span>
+    </div>
+  </div>
+
+  <!-- Flash -->
+  <div class="fx-group">
+    <div class="fx-header">
+      <input type="checkbox" id="en-flash">
+      <label for="en-flash">flash</label>
+      <span class="tier tier-fast">fast</span>
+    </div>
+    <div class="fx-controls">
+      <label>opacity</label><input type="range" min="0" max="100" value="30" data-fx="flash" data-p="opacity" data-scale="0.01"><span class="val">0.30</span>
+      <label>r</label><input type="range" min="0" max="255" value="255" data-fx="flash" data-p="color.0"><span class="val">255</span>
+      <label>g</label><input type="range" min="0" max="255" value="255" data-fx="flash" data-p="color.1"><span class="val">255</span>
+      <label>b</label><input type="range" min="0" max="255" value="255" data-fx="flash" data-p="color.2"><span class="val">255</span>
+    </div>
+  </div>
+
+  <!-- Brightness -->
+  <div class="fx-group">
+    <div class="fx-header">
+      <input type="checkbox" id="en-brightness">
+      <label for="en-brightness">brightness</label>
+      <span class="tier tier-fast">fast</span>
+    </div>
+    <div class="fx-controls">
+      <label>value</label><input type="range" min="0" max="100" value="50" data-fx="brightness" data-p="value"><span class="val">50</span>
+    </div>
+  </div>
+
+  <!-- Noise -->
+  <div class="fx-group">
+    <div class="fx-header">
+      <input type="checkbox" id="en-noise">
+      <label for="en-noise">noise</label>
+      <span class="tier tier-slow">pixel</span>
+    </div>
+    <div class="fx-controls">
+      <label>intensity</label><input type="range" min="0" max="100" value="50" data-fx="noise" data-p="intensity" data-scale="0.01"><span class="val">0.50</span>
+      <label>scale</label><input type="range" min="1" max="64" value="16" data-fx="noise" data-p="scale"><span class="val">16</span>
+      <label>alpha</label><input type="range" min="0" max="255" value="200" data-fx="noise" data-p="alpha"><span class="val">200</span>
+    </div>
+  </div>
+
+  <!-- Glitch -->
+  <div class="fx-group">
+    <div class="fx-header">
+      <input type="checkbox" id="en-glitch">
+      <label for="en-glitch">glitch</label>
+      <span class="tier tier-slow">pixel</span>
+    </div>
+    <div class="fx-controls">
+      <label>slices</label><input type="range" min="1" max="20" value="3" data-fx="glitch" data-p="slices"><span class="val">3</span>
+      <label>maxOffset</label><input type="range" min="1" max="80" value="10" data-fx="glitch" data-p="maxOffset"><span class="val">10</span>
+      <label>minHeight</label><input type="range" min="1" max="40" value="2" data-fx="glitch" data-p="minHeight"><span class="val">2</span>
+      <label>maxHeight</label><input type="range" min="1" max="80" value="10" data-fx="glitch" data-p="maxHeight"><span class="val">10</span>
+      <label>tintOpacity</label><input type="range" min="0" max="100" value="5" data-fx="glitch" data-p="tintOpacity" data-scale="0.01"><span class="val">0.05</span>
+    </div>
+  </div>
+
+  <!-- Chromatic -->
+  <div class="fx-group">
+    <div class="fx-header">
+      <input type="checkbox" id="en-chromatic">
+      <label for="en-chromatic">chromatic</label>
+      <span class="tier tier-medium">offscreen</span>
+    </div>
+    <div class="fx-controls">
+      <label>offset</label><input type="range" min="1" max="30" value="4" data-fx="chromatic" data-p="offset"><span class="val">4</span>
+      <label>opacity</label><input type="range" min="0" max="100" value="30" data-fx="chromatic" data-p="opacity" data-scale="0.01"><span class="val">0.30</span>
+    </div>
+  </div>
+
+  <!-- Shake -->
+  <div class="fx-group">
+    <div class="fx-header">
+      <input type="checkbox" id="en-shake">
+      <label for="en-shake">shake</label>
+      <span class="tier tier-fast">fast</span>
+    </div>
+    <div class="fx-controls">
+      <label>intensity</label><input type="range" min="1" max="80" value="25" data-fx="shake" data-p="intensity"><span class="val">25</span>
+    </div>
+  </div>
+
+  <button id="copy-btn">Copy snippet</button>
+</div>
+
+<script type="module">
+import {
+  scanlines, vignette, tint, desaturate, nightvision,
+  flash, brightness, noise, glitch, chromatic, shake,
+} from '../src/index.js';
+
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const fpsEl = document.getElementById('fps');
+
+// --- Slider state ---
+const state = {
+  scanlines:   { gap: 4, width: 2, opacity: 0.12, color: [0, 0, 0] },
+  vignette:    { innerRadius: 0.3, outerRadius: 0.75, opacity: 0.5, color: [0, 0, 0] },
+  tint:        { color: [0, 30, 0], opacity: 0.08 },
+  desaturate:  { intensity: 0.6 },
+  nightvision: { intensity: 0.6 },
+  flash:       { opacity: 0.3, color: [255, 255, 255] },
+  brightness:  { value: 50 },
+  noise:       { intensity: 0.5, scale: 16, alpha: 200 },
+  glitch:      { slices: 3, maxOffset: 10, minHeight: 2, maxHeight: 10, tintOpacity: 0.05 },
+  chromatic:   { offset: 4, opacity: 0.3 },
+  shake:       { intensity: 25 },
+};
+
+// --- Wire up sliders ---
+document.querySelectorAll('input[type="range"]').forEach(input => {
+  const update = () => {
+    const fx = input.dataset.fx;
+    const param = input.dataset.p;
+    const scale = parseFloat(input.dataset.scale || '1');
+    const raw = parseFloat(input.value);
+    const val = raw * scale;
+    const display = scale < 1 ? val.toFixed(2) : String(raw);
+    input.nextElementSibling.textContent = display;
+
+    // Handle color.N params
+    if (param.startsWith('color.')) {
+      const idx = parseInt(param.split('.')[1]);
+      state[fx].color[idx] = raw;
+    } else {
+      state[fx][param] = val;
+    }
+  };
+  input.addEventListener('input', update);
+});
+
+// --- Enabled state ---
+function isOn(name) {
+  return document.getElementById('en-' + name).checked;
+}
+
+// --- FPS counter ---
+let frameCount = 0;
+let lastFpsTime = performance.now();
+
+function updateFps(now) {
+  frameCount++;
+  const delta = now - lastFpsTime;
+  if (delta >= 500) {
+    fpsEl.textContent = ((frameCount / delta) * 1000).toFixed(0) + ' FPS';
+    frameCount = 0;
+    lastFpsTime = now;
+  }
+}
+
+// --- Animated base scene ---
+function drawScene(t) {
+  const w = canvas.width;
+  const h = canvas.height;
+
+  // Gradient background
+  const grad = ctx.createLinearGradient(0, 0, w, h);
+  grad.addColorStop(0, '#1a1a2e');
+  grad.addColorStop(0.5, '#16213e');
+  grad.addColorStop(1, '#0f3460');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  // Rotating shapes
+  const shapes = [
+    { x: w * 0.25, y: h * 0.4, r: 60, color: '#e94560', sides: 4, speed: 0.8 },
+    { x: w * 0.6,  y: h * 0.3, r: 45, color: '#533483', sides: 3, speed: -1.2 },
+    { x: w * 0.75, y: h * 0.65, r: 50, color: '#0f3460', sides: 6, speed: 0.5 },
+    { x: w * 0.4,  y: h * 0.7, r: 35, color: '#e94560', sides: 5, speed: -0.7 },
+    { x: w * 0.15, y: h * 0.75, r: 30, color: '#533483', sides: 8, speed: 1.0 },
+  ];
+
+  for (const s of shapes) {
+    ctx.save();
+    ctx.translate(s.x, s.y);
+    ctx.rotate(t * s.speed);
+    ctx.beginPath();
+    for (let i = 0; i < s.sides; i++) {
+      const angle = (Math.PI * 2 / s.sides) * i - Math.PI / 2;
+      const px = Math.cos(angle) * s.r;
+      const py = Math.sin(angle) * s.r;
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    ctx.fillStyle = s.color;
+    ctx.globalAlpha = 0.8;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // Bouncing circles
+  for (let i = 0; i < 3; i++) {
+    const cx = w * 0.5 + Math.sin(t * (0.6 + i * 0.3)) * w * 0.3;
+    const cy = h * 0.5 + Math.cos(t * (0.8 + i * 0.2)) * h * 0.25;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 20 + i * 8, 0, Math.PI * 2);
+    ctx.fillStyle = ['#ff6b6b', '#4ecdc4', '#ffe66d'][i];
+    ctx.globalAlpha = 0.6;
+    ctx.fill();
+  }
+
+  ctx.globalAlpha = 1;
+}
+
+// --- Main loop ---
+const fxMap = { scanlines, vignette, tint, desaturate, nightvision, flash, brightness, noise, glitch, chromatic };
+
+function frame(now) {
+  const t = now / 1000;
+
+  // Apply shake offset before drawing
+  ctx.save();
+  if (isOn('shake')) {
+    const offset = shake(state.shake);
+    ctx.translate(offset.x, offset.y);
+  }
+
+  drawScene(t);
+
+  // Apply post-fx in order
+  const order = ['brightness', 'desaturate', 'nightvision', 'tint', 'chromatic', 'noise', 'glitch', 'scanlines', 'vignette', 'flash'];
+  for (const name of order) {
+    if (isOn(name)) {
+      fxMap[name](ctx, state[name]);
+    }
+  }
+
+  ctx.restore();
+
+  updateFps(now);
+  requestAnimationFrame(frame);
+}
+
+requestAnimationFrame(frame);
+
+// --- Copy snippet ---
+document.getElementById('copy-btn').addEventListener('click', () => {
+  const lines = [];
+  lines.push("import {");
+  const active = [];
+  const allNames = ['scanlines', 'vignette', 'tint', 'desaturate', 'nightvision', 'flash', 'brightness', 'noise', 'glitch', 'chromatic', 'shake'];
+  for (const name of allNames) {
+    if (isOn(name)) active.push(name);
+  }
+  if (active.length === 0) {
+    lines.length = 0;
+    lines.push('// No effects enabled');
+  } else {
+    lines.push("  " + active.join(', ') + ",");
+    lines.push("} from 'canvas-post-fx';");
+    lines.push("");
+    for (const name of active) {
+      if (name === 'shake') {
+        lines.push(`const offset = shake(${JSON.stringify(state[name])});`);
+        lines.push('ctx.translate(offset.x, offset.y);');
+      } else {
+        lines.push(`${name}(ctx, ${JSON.stringify(state[name])});`);
+      }
+    }
+  }
+
+  const text = lines.join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy snippet'; btn.classList.remove('copied'); }, 1500);
+  });
+});
+</script>
+
+</body>
+</html>
