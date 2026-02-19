@@ -24,6 +24,13 @@
     "vignette", "glitch", "noise", "chromatic-aberration", "crt",
     "game", "real-time", "no-webgl"
   ],
+  "author": "Aditya Kapoor",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adityuhkapoor/canvas-post-fx.git"
+  },
+  "homepage": "https://adityuhkapoor.github.io/canvas-post-fx/demo/",
+  "bugs": "https://github.com/adityuhkapoor/canvas-post-fx/issues",
   "license": "MIT",
   "sideEffects": false
 }
